@@ -1,2 +1,92 @@
-<!DOCTYPE html><html lang="hi"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>India Net Fix</title><style>body{font-family:Arial;margin:0;background:#f2f4f7;color:#222}header{background:#0b5ed7;color:#fff;padding:18px;text-align:center}main{max-width:900px;margin:20px auto;padding:16px}button{padding:12px 18px;border:none;border-radius:8px;background:#0b5ed7;color:#fff;font-size:16px;cursor:pointer}.card{background:#fff;border-radius:10px;padding:16px;margin-top:16px;box-shadow:0 5px 15px rgba(0,0,0,0.1)}.ok{color:green;font-weight:bold}.bad{color:red;font-weight:bold}</style></head><body><header><h1>India Net Fix</h1><p>Bank site, UPI, DNS problem? Test karo aur fix pao.</p></header><main><div class="card"><button onclick="startTest()">Start Network Test</button></div><div id="results" class="card" style="display:none"><h3>Test Results</h3><ul id="resultList"></ul></div><div id="fixes" class="card" style="display:none"><h3>Recommended Fix</h3><div id="fixText"></div></div></main><script>function add(text,cls){let li=document.createElement("li");li.className=cls;li.innerText=text;resultList.appendChild(li);}function device(){let u=navigator.userAgent.toLowerCase();if(u.includes("android")) return "Android";if(u.includes("windows")) return "Windows";if(u.includes("iphone")||u.includes("ipad")) return "iPhone";return "Other";}function startTest(){results.style.display="block";fixes.style.display="block";resultList.innerHTML="";let dev=device();add("Device: "+dev,"ok");add("Checking internet connection...","ok");if(navigator.onLine){add("Internet is working","ok");}else{add("Internet not working","bad");}add("If Indian bank site not opening, DNS issue ho sakta hai.","bad");let fix="<ul><li>DNS set kare: 1.1.1.1 / 8.8.8.8</li><li>VPN band kare</li><li>Router restart kare</li></ul>";if(dev==="Android"){fix+="<h4>Android:</h4><ol><li>WiFi → Modify</li><li>IP Static</li><li>DNS change</li></ol>";}if(dev==="Windows"){fix+="<h4>Windows:</h4><ol><li>Adapter settings</li><li>IPv4 DNS change</li></ol>";}if(dev==="iPhone"){fix+="<h4>iPhone:</h4><ol><li>WiFi → DNS Manual</li></ol>";}fixText.innerHTML=fix;}</script></body></html>
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>India Net Fix</title>
+<style>
+body{font-family:Arial;margin:0;background:#f2f4f7;color:#222}
+header{background:#0b5ed7;color:#fff;padding:18px;text-align:center}
+main{max-width:900px;margin:20px auto;padding:16px}
+button{padding:12px 18px;border:none;border-radius:8px;background:#0b5ed7;color:#fff;font-size:16px;cursor:pointer}
+.card{background:#fff;border-radius:10px;padding:16px;margin-top:16px;box-shadow:0 5px 15px rgba(0,0,0,0.1)}
+.ok{color:green;font-weight:bold}
+.bad{color:red;font-weight:bold}
+</style>
+</head>
 
+<body>
+
+<header>
+<h1>India Net Fix</h1>
+<p>Bank site, UPI, DNS problem? Test karo aur fix pao.</p>
+</header>
+
+<main>
+<div class="card">
+<button onclick="startTest()">Start Network Test</button>
+</div>
+
+<div id="results" class="card" style="display:none">
+<h3>Test Results</h3>
+<ul id="resultList"></ul>
+</div>
+
+<div id="fixes" class="card" style="display:none">
+<h3>Recommended Fix</h3>
+<div id="fixText"></div>
+</div>
+</main>
+
+<script>
+function add(text,cls){
+let li=document.createElement("li");
+li.className=cls;
+li.innerText=text;
+resultList.appendChild(li);
+}
+
+function device(){
+let u=navigator.userAgent.toLowerCase();
+if(u.includes("android")) return "Android";
+if(u.includes("windows")) return "Windows";
+if(u.includes("iphone")||u.includes("ipad")) return "iPhone";
+return "Other";
+}
+
+function startTest(){
+results.style.display="block";
+fixes.style.display="block";
+resultList.innerHTML="";
+
+let dev=device();
+add("Device: "+dev,"ok");
+
+add("Checking internet connection...","ok");
+
+if(navigator.onLine){
+add("Internet is working","ok");
+}else{
+add("Internet not working","bad");
+}
+
+add("If Indian bank site not opening, DNS issue ho sakta hai.","bad");
+
+let fix="<ul><li>DNS set kare: 1.1.1.1 / 8.8.8.8</li><li>VPN band kare</li><li>Router restart kare</li></ul>";
+
+if(dev==="Android"){
+fix+="<h4>Android:</h4><ol><li>WiFi → Modify</li><li>IP Static</li><li>DNS change</li></ol>";
+}
+if(dev==="Windows"){
+fix+="<h4>Windows:</h4><ol><li>Adapter settings</li><li>IPv4 DNS change</li></ol>";
+}
+if(dev==="iPhone"){
+fix+="<h4>iPhone:</h4><ol><li>WiFi → DNS Manual</li></ol>";
+}
+
+fixText.innerHTML=fix;
+}
+</script>
+
+</body>
+</html>
