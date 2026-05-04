@@ -6,13 +6,18 @@
   <title>India Net Fix</title>
 
   <style>
-    body{font-family:Arial;margin:0;background:#f2f4f7;color:#222}
-    header{background:#0b5ed7;color:#fff;padding:18px;text-align:center}
-    main{max-width:900px;margin:20px auto;padding:16px}
-    button{padding:12px 18px;border:none;border-radius:8px;background:#0b5ed7;color:#fff;font-size:16px;cursor:pointer}
-    .card{background:#fff;border-radius:10px;padding:16px;margin-top:16px;box-shadow:0 5px 15px rgba(0,0,0,0.1)}
-    .ok{color:green;font-weight:bold}
-    .bad{color:red;font-weight:bold}
+    body{font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin:0; background:#f2f4f7; color:#222; line-height: 1.6;}
+    header{background:#0b5ed7; color:#fff; padding:25px; text-align:center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);}
+    main{max-width:800px; margin:20px auto; padding:16px}
+    button{padding:14px 24px; border:none; border-radius:8px; background:#0b5ed7; color:#fff; font-size:16px; cursor:pointer; font-weight: bold; width: 100%; transition: background 0.3s;}
+    button:hover{background: #084ab2;}
+    .card{background:#fff; border-radius:12px; padding:20px; margin-top:16px; box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+    .ok{color:#28a745; font-weight:bold; margin-bottom: 8px; list-style: "✓ ";}
+    .bad{color:#dc3545; font-weight:bold; margin-bottom: 8px; list-style: "× ";}
+    h3{margin-top: 0; border-bottom: 2px solid #eee; padding-bottom: 10px;}
+    ul{padding-left: 20px;}
+    .loading-text{color: #666; font-style: italic;}
+    .step-box{background: #f8f9fa; padding: 15px; border-left: 4px solid #0b5ed7; margin-top: 10px;}
   </style>
 </head>
 
@@ -20,13 +25,13 @@
 
 <header>
   <h1>India Net Fix</h1>
-  <p>Bank site, UPI, DNS problem? 10 second me test karo aur fix pao.</p>
+  <p>Bank site, UPI ya DNS problem? 10 second mein test karein.</p>
 </header>
 
 <main>
 
   <div class="card">
-    <button onclick="startTest()">Start Network Test</button>
+    <button id="testBtn" onclick="startTest()">Start Network Test</button>
   </div>
 
   <div id="results" class="card" style="display:none">
@@ -35,7 +40,7 @@
   </div>
 
   <div id="fixes" class="card" style="display:none">
-    <h3>Recommended Fix</h3>
+    <h3>Recommended Fix (Aapke Device ke hisaab se)</h3>
     <div id="fixText"></div>
   </div>
 
@@ -57,64 +62,87 @@ function deviceDetect(){
   return "Other";
 }
 
+// Function to check site reachability using Image test (CORS safe)
+function checkSite(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url + "/favicon.ico?t=" + new Date().getTime(); // Cache bypass
+    setTimeout(() => resolve(false), 5000); // 5 sec timeout
+  });
+}
+
 async function startTest(){
+  const btn = document.getElementById("testBtn");
+  btn.disabled = true;
+  btn.innerText = "Testing... Please wait";
+  
   document.getElementById("results").style.display="block";
-  document.getElementById("fixes").style.display="block";
-  document.getElementById("resultList").innerHTML="";
+  document.getElementById("fixes").style.display="none";
+  document.getElementById("resultList").innerHTML="<p class='loading-text'>Network scan ho raha hai...</p>";
 
   let issues=[];
   const device=deviceDetect();
 
+  // Thoda delay feel dene ke liye (UX)
+  await new Promise(r => setTimeout(r, 1000));
+  document.getElementById("resultList").innerHTML="";
+
   addResult("Device Detected: "+device,"ok");
 
-  // DNS test (safe)
-  try{
-    await fetch("https://1.1.1.1/cdn-cgi/trace",{mode:"no-cors"});
-    addResult("Internet reachable. DNS basic test passed.","ok");
-  }catch{
-    addResult("DNS/Internet issue detected.","bad");
+  // Test 1: Google/Internet Reachability
+  const isInternetUp = await checkSite("https://www.google.com");
+  if(isInternetUp){
+    addResult("Internet connection active hai.","ok");
+  } else {
+    addResult("Internet ya DNS mein issue lag raha hai.","bad");
     issues.push("dns");
   }
 
-  // Indian site reach test
-  try{
-    await fetch("https://www.sbi.co.in",{mode:"no-cors"});
-    addResult("Indian bank site reachable.","ok");
-  }catch{
-    addResult("Indian bank site not reachable.","bad");
+  // Test 2: Indian Bank Site (SBI)
+  const isBankUp = await checkSite("https://www.sbi.co.in");
+  if(isBankUp){
+    addResult("Indian bank servers reachable hain.","ok");
+  } else {
+    addResult("Bank ki website reach nahi ho rahi.","bad");
     issues.push("bank");
   }
 
   showFix(issues,device);
+  document.getElementById("fixes").style.display="block";
+  btn.disabled = false;
+  btn.innerText = "Re-run Test";
 }
 
 function showFix(issues,device){
   let fix="";
 
   if(issues.length===0){
-    fix="<p class='ok'>Koi major issue detect nahi hua. Browser cache clear karke try kare.</p>";
+    fix="<p class='ok'>✓ Sab kuch sahi lag raha hai! Agar phir bhi site nahi khul rahi toh browser ki 'Cache & Cookies' clear karein.</p>";
   }else{
-    fix+="<ul>";
-    if(issues.includes("dns")){
-      fix+="<li>DNS change kare: 1.1.1.1 aur 8.8.8.8 set kare.</li>";
-    }
-    if(issues.includes("bank")){
-      fix+="<li>VPN band kare, router restart kare, DNS set kare.</li>";
+    fix+="<p><b>Niche diye gaye steps follow karein:</b></p><ul>";
+    if(issues.includes("dns") || issues.includes("bank")){
+      fix+="<li><b>DNS Change karein:</b> Private DNS ya manual DNS (1.1.1.1) ka use karein.</li>";
+      fix+="<li><b>IPv6 Disable karein:</b> Kai baar India mein IPv6 ki wajah se bank sites block ho jati hain.</li>";
+      fix+="<li><b>VPN Band karein:</b> Agar koi VPN on hai toh use off karein.</li>";
     }
     fix+="</ul>";
   }
 
+  // Device specific steps
+  let steps = "";
   if(device==="Android"){
-    fix+="<h4>Android Steps:</h4><ol><li>WiFi long press → Modify</li><li>IP Settings → Static</li><li>DNS: 1.1.1.1, 8.8.8.8</li></ol>";
+    steps = "<div class='step-box'><b>Android Steps:</b> Settings > Connection > More Connections > Private DNS > 'dns.google' ya '1dot1dot1dot1.cloudflare-dns.com' likhein.</div>";
   }
   else if(device==="Windows"){
-    fix+="<h4>Windows Steps:</h4><ol><li>Network Adapter → IPv4</li><li>Use following DNS</li><li>1.1.1.1, 8.8.8.8</li></ol>";
+    steps = "<div class='step-box'><b>Windows Steps:</b> Control Panel > Network Settings > Change Adapter Options > Right click WiFi > Properties > IPv4 select karein > Use following DNS: 1.1.1.1 aur 8.8.8.8 set karein.</div>";
   }
   else if(device==="iPhone"){
-    fix+="<h4>iPhone Steps:</h4><ol><li>WiFi → (i)</li><li>Configure DNS → Manual</li><li>1.1.1.1 add kare</li></ol>";
+    steps = "<div class='step-box'><b>iPhone Steps:</b> Settings > Wi-Fi > apne network ke (i) par click karein > Configure DNS > Manual > 1.1.1.1 add karein.</div>";
   }
 
-  document.getElementById("fixText").innerHTML=fix;
+  document.getElementById("fixText").innerHTML = fix + steps;
 }
 </script>
 
