@@ -82,12 +82,12 @@
     }
 
     async function testIPv6(){
-      try{
-        const res = await fetch('https://[2606:4700:4700::1111]/cdn-cgi/trace');
-        if(res.ok) return true;
-        return false;
-      }catch(e){
-        return false;
+  try{
+    await fetch('https://ipv6.cloudflare.com/cdn-cgi/trace', {mode:'no-cors'});
+    return true;
+  }catch(e){
+    return false;
+  
       }
     }
 
