@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>India Net Fix – DNS, Bank Site, IPv6 & Redirect Diagnostic</title>
+  <meta name="description" content="Indian bank websites not opening? Diagnose DNS, IPv6, VPN, and ISP redirect issues instantly with step-by-step fixes for Android, Windows, and iPhone." />
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#f4f6f8;color:#222}
+    header{background:#0b5ed7;color:#fff;padding:18px;text-align:center}
+    main{max-width:980px;margin:20px auto;padding:16px}
+    button{padding:12px 18px;border:none;border-radius:10px;background:#0b5ed7;color:#fff;font-size:16px;cursor:pointer}
+    .card{background:#fff;border-radius:14px;padding:18px;margin-top:16px;box-shadow:0 8px 22px rgba(0,0,0,0.08)}
+    .ok{color:green;font-weight:bold}
+    .bad{color:#d11a2a;font-weight:bold}
+    .warn{color:#b26a00;font-weight:bold}
+    ul{line-height:1.8}
+    .muted{color:#666}
+    footer{text-align:center;margin:30px 0;color:#666}
+    .grid{display:grid;gap:14px}
+    @media(min-width:800px){.grid{grid-template-columns:1fr 1fr}}
+    code{background:#eef2f7;padding:3px 6px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>India Net Fix</h1>
+    <p>Indian Websites, Bank, UPI not opening? 10 second me problem pakdo aur fix pao.</p>
+  </header>
+
+  <main>
+    <div class="card">
+      <b>Ye tool kya check karta hai?</b>
+      <ul class="muted">
+        <li>DNS problem (ISP vs Secure DNS)</li>
+        <li>IPv6 routing issue (India me common)</li>
+        <li>VPN / Proxy interference</li>
+        <li>Indian bank website reachability</li>
+        <li>Device detect karke exact steps</li>
+      </ul>
+      <button onclick="startTest()">Start Network Test</button>
+    </div>
+
+    <div id="results" class="card" style="display:none">
+      <h2>Test Results</h2>
+      <ul id="resultList"></ul>
+    </div>
+
+    <div id="fixes" class="card" style="display:none">
+      <h2>Recommended Fix (Aapke Device ke hisaab se)</h2>
+      <div id="fixContent"></div>
+    </div>
+
+    <div class="card">
+      <h3>SEO Help Text (Google pe rank ke liye)</h3>
+      <p class="muted">
+        Bank website not opening on WiFi, UPI not working, DNS problem India, SBI site error, government website not opening,
+        IPv6 issue India, ISP redirect problem, how to change DNS in Android Windows iPhone.
+      </p>
+    </div>
+  </main>
+
+  <footer>
+    Made to help Indian users fix DNS & banking access problems easily.
+  </footer>
+
+  <script>
+    function deviceType(){
+      const ua = navigator.userAgent.toLowerCase();
+      if(/android/.test(ua)) return 'android';
+      if(/iphone|ipad|ipod/.test(ua)) return 'ios';
+      if(/windows/.test(ua)) return 'windows';
+      if(/mac/.test(ua)) return 'mac';
+      return 'other';
+    }
+
+    function addItem(text, cls){
+      const li=document.createElement('li');
+      li.className=cls;
+      li.textContent=text;
+      document.getElementById('resultList').appendChild(li);
+    }
+
+    async function testIPv6(){
+      try{
+        const res = await fetch('https://[2606:4700:4700::1111]/cdn-cgi/trace');
+        if(res.ok) return true;
+        return false;
+      }catch(e){
+        return false;
+      }
+    }
+
+    async function startTest(){
+      document.getElementById('results').style.display='block';
+      document.getElementById('fixes').style.display='block';
+      const list=document.getElementById('resultList');
+      list.innerHTML='';
+
+      let issues=[];
+
+      // Device detect
+      const dev = deviceType();
+      addItem('Device Detected: ' + dev.toUpperCase(), 'warn');
+
+      // DNS test
+      try{
+        const res=await fetch('https://1.1.1.1/cdn-cgi/trace');
+        const text=await res.text();
+        if(text.includes('warp=off')){
+          addItem('DNS: Secure DNS use nahi ho raha', 'bad');
+          issues.push('dns');
+        }else{
+          addItem('DNS: Secure DNS detected', 'ok');
+        }
+      }catch(e){
+        addItem('DNS: Verify nahi ho paya', 'warn');
+      }
+
+      // IPv6 test
+      const ipv6ok = await testIPv6();
+      if(!ipv6ok){
+        addItem('IPv6 Routing Issue detected', 'bad');
+        issues.push('ipv6');
+      }else{
+        addItem('IPv6 Working', 'ok');
+      }
+
+      // Indian bank reach test
+      try{
+        await fetch('https://www.sbi.co.in', {mode:'no-cors'});
+        addItem('Indian Bank Site Reachable', 'ok');
+      }catch(e){
+        addItem('Indian Bank Site Not Reachable', 'bad');
+        issues.push('bank');
+      }
+
+      showFixes(issues, dev);
+    }
+
+    function showFixes(issues, dev){
+      const div=document.getElementById('fixContent');
+      if(issues.length===0){
+        div.innerHTML='<p class="ok">Major issue detect nahi hua. Browser cache clear karke try karein.</p>';
+        return;
+      }
+
+      let html='<ul>';
+
+      if(issues.includes('dns')){
+        html+='<li><b>DNS change karein:</b> <code>1.1.1.1</code> / <code>8.8.8.8</code></li>';
+      }
+
+      if(issues.includes('ipv6')){
+        html+='<li><b>IPv6 band karein (temporary test ke liye)</b></li>';
+      }
+
+      if(issues.includes('bank')){
+        html+='<li><b>VPN band karein, router restart karein, DNS set karein</b></li>';
+      }
+
+      html+='</ul><hr/>';
+
+      // Device specific steps
+      if(dev==='android'){
+        html+='<h4>Android Steps</h4><ol>'+
+        '<li>WiFi long press → Modify Network</li>'+
+        '<li>IP Settings → Static</li>'+
+        '<li>DNS 1: 1.1.1.1, DNS 2: 8.8.8.8</li>'+
+        '</ol>';
+      }
+      else if(dev==='windows'){
+        html+='<h4>Windows Steps</h4><ol>'+
+        '<li>Control Panel → Network Adapter</li>'+
+        '<li>IPv4 → Use following DNS</li>'+
+        '<li>1.1.1.1 and 8.8.8.8 set karein</li>'+
+        '</ol>';
+      }
+      else if(dev==='ios'){
+        html+='<h4>iPhone Steps</h4><ol>'+
+        '<li>WiFi → (i) button</li>'+
+        '<li>Configure DNS → Manual</li>'+
+        '<li>1.1.1.1 add karein</li>'+
+        '</ol>';
+      }
+
+      div.innerHTML=html;
+    }
+  </script>
+</body>
+</html>
